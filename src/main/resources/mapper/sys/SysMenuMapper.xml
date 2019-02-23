@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.db.sys.dao.SysMenuDao">
+
+	<select id="findPermisssions" resultType="string">
+	select permission 
+	from sys_menus 
+	where id in 
+	<foreach collection="menuIds" open="(" close=")" separator="," item="item">
+	#{item}
+	</foreach>
+	</select>
+
+	<select id="findObjects" resultType="map">
+		select c.*,(
+		select p.name
+		from sys_menus p
+		where c.parentId=p.id
+		) parentName
+		from sys_menus c
+	</select>
+
+	<select id="getChildCount" parameterType="int" resultType="int">
+		select count(*) from sys_menus where parentId=#{id}
+	</select>
+
+	<delete id="deleteObject" parameterType="int">
+		delete from sys_menus where id=#{id}
+	</delete>
+	<!-- 查询页面上在Tree呈现菜单时,需要的节点信息 -->
+	<select id="findZtreeMenuNodes" resultType="com.db.common.vo.Node">
+		select id,name,parentId
+		from sys_menus
+		<!-- 将菜单信息持久化到数据库中 -->
+	</select>
+	<insert id="insertObject" parameterType="com.db.sys.entity.SysMenu">
+		insert into sys_menus
+		(name,url,type,sort,note,parentId,permission,createdTime,modifiedTime,createdUser,modifiedUser)
+		values
+		(#{name},#{url},#{type},#{sort},#{note},#{parentId},#{permission},now(),now(),#{createdUser},#{modifiedUser})
+	</insert>
+
+	<update id="updateObject" parameterType="com.db.sys.entity.SysMenu">
+		update sys_menus
+		set name=#{name},
+		type=#{type},
+		sort=#{sort},
+		url=#{url},
+		note=#{note},
+		parentId=#{parentId},
+		permission=#{permission},
+		modifiedUser=#{modifiedUser},
+		modifiedTime=now()
+		where id=#{id}
+	</update>
+</mapper>

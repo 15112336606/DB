@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.db.sys.dao.SysRoleDao">
+	<sql id="queryWhereId">
+		<where>
+		<if test="name!=null and name!=''">
+		 name like concat("%",#{name},"%")
+		</if>
+		</where>
+	</sql>
+	
+	<select id="findPageObjects" resultType="com.db.sys.entity.SysRole">
+		select * 
+		from sys_roles 
+		<include refid="queryWhereId"></include> 
+		order by createdTime desc
+		limit #{startIndex},#{pageSize}
+	</select>
+	
+	<select id="getRowCount" resultType="int">
+	select count(*) 
+	from sys_roles
+	<include refid="queryWhereId"></include>
+	</select>
+	
+	
+	<insert id="insertObject" useGeneratedKeys="true" parameterType="com.db.sys.entity.SysRole"
+	 keyProperty="id">
+	insert into sys_roles 
+	(id,name,note,createdTime,modifiedTime,createdUser,modifiedUser) 
+	values 
+	(null,#{name},#{note},now(),now(),
+         #{createdUser},#{modifiedUser})
+	</insert>
+	
+	<select id="findObjectById" resultMap="sysRoleMenuVo">
+	select id,name,note from sys_roles where id=#{id}
+	</select>
+	<!-- 当使用关联查询或自定义映射时,一般使用resultMap -->
+	<!-- 一对多查询 (one2many) 使用collection -->
+	<resultMap type="com.db.common.vo.SysRoleMenuVo" id="sysRoleMenuVo">
+		<collection property="menuIds" column="id" select="com.db.sys.dao.SysRoleMenuDao.findMenuIdsByRoleId"></collection>
+	</resultMap>
+	
+	<update id="updateObject" parameterType="com.db.sys.entity.SysRole">
+	    update sys_roles
+			<set>
+            <if test="name!=null and name!=''">
+             name=#{name},
+            </if>
+            <if test="note!=null and note!=''">
+             note=#{note},
+            </if>
+            <if test="modifiedUser!=null and modifiedUser!=''">
+             modifiedUser=#{modifiedUser},
+            </if>
+             modifiedTime=now()
+           </set>
+           where id=#{id}
+	</update>
+	
+	<select id="findObjects" resultType="com.db.common.vo.CheckBox">
+	select id,name from sys_roles
+	</select>
+</mapper>
